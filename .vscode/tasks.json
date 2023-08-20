@@ -9,7 +9,7 @@
                 "-g",
                 "${file}",
                 // Libraries
-                // "${fileDirname}/sha1.cpp"
+                "${fileDirname}/sha1.cpp",
                 "-lssl",
                 "-lcrypto",
                 "-lcurl",
@@ -18,7 +18,7 @@
                 "-I", "./include",
 
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.build"
+                "${fileDirname}/${fileBasenameNoExtension}.o"
             ],
             "options": {
                 "cwd": "${fileDirname}"

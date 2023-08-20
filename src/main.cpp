@@ -2,9 +2,10 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cstring>
 
 #include <curl/curl.h>
-#include <openssl/sha.h>
+#include "../include/sha1/sha1.h"
 
 using namespace std;
 
@@ -28,35 +29,43 @@ vector<string> splitString(const string& str, const char _char)
  
     return tokens;
 }
-const unsigned char* cast(string str) {
-    union { const char* ccptr; const unsigned char* cucptr; } uword;
-    uword.ccptr = str.data();
-    return uword.cucptr;
-}
+
+int HASH_SIZE = 40;
 
 int main() {
     cout << "Enter password: ";
     string line;
     getline(cin, line);
 
-    unsigned char hashBuffer[40];
+    const char* str = line.c_str();
 
-    const unsigned char* password = cast(line);
+    sha1::sha1_t sha1;
 
-    SHA1(password, sizeof(password) - 1, hashBuffer);
+    sha1.process(str, strlen(str));
 
-    cout << hashBuffer;
+    unsigned char sig[HASH_SIZE];
 
-    /*
+    sha1.finish(sig);
+
+    char hashBuffer[HASH_SIZE];
+
+    sha1::sig_to_string(sig, hashBuffer);
+
+    // Uppercase
+    for(int i=0;i<strlen(hashBuffer);i++){
+        hashBuffer[i] = toupper(hashBuffer[i]);
+    }
+
+    string hash = string(hashBuffer);
 
     string subbedHash = hash.substr(0,5);
     string hashLeft = hash.substr(5,hash.size() - 5);
 
-    cout << "\n" << hash << "\n";
-
     string fullURL = url + subbedHash;
 
     string response;
+
+    // cURL
 
     auto curl = curl_easy_init();
 
@@ -79,10 +88,11 @@ int main() {
     curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &elapsed);
     curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
 
-    cout << "RESPONSE:\n" << response;
+    // end cURL
 
     vector<string> hashes = splitString(response, '\n');
 
+    // Loop through every hash returned
     for (unsigned int i = 0; i < hashes.size(); i++) {
         string line = hashes[i];
 
@@ -96,14 +106,13 @@ int main() {
             int appearances;
             temp >> appearances;
 
-            cout << "\nYour password has been breached " << appearances << " times";
+            cout << "\nYour password has been breached " << appearances << " times!\n\n";
 
             main();
         }
     }
 
-    cout << "\nYour password hasn't been breached yet!\n";
+    cout << "\nYour password hasn't been breached yet!\n\n";
     
     main();
-    */
 }
